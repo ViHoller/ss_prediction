@@ -1,6 +1,7 @@
 from keras import regularizers
 from keras.layers import (Layer, Convolution1D, Activation,
-                          BatchNormalization, concatenate, Dropout)
+                          BatchNormalization, concatenate, Dropout,
+                          Masking)
 
 
 class inception_conv(Layer):
@@ -13,8 +14,11 @@ class inception_conv(Layer):
                                   padding='same',
                                   activation='relu')
         self.b_norm = BatchNormalization()
+        self.masking = Masking(mask_value=0)
 
-    def call(self, inputs):
+    def call(self, inputs, mask=None):
+        if mask is not None:
+            inputs = self.masking(inputs)
         X = self.conv(inputs)
         X = Dropout(0.4)(X)
         X = self.b_norm(X)
@@ -33,8 +37,11 @@ class InceptionNet_paper(Layer):
         self.conv3_4 = inception_conv(3)
         self.b_norm1 = BatchNormalization()
         self.b_norm2 = BatchNormalization()
+        self.masking = Masking(mask_value=0)
 
-    def call(self, inputs):
+    def call(self, inputs, mask=None):
+        if mask is not None:
+            inputs = self.masking(inputs)
         X = self.b_norm1(inputs)
         X1 = self.conv1_1(X)
         X2 = self.conv3_1(self.conv1_2(X))
@@ -55,8 +62,12 @@ class DeepInception_block(Layer):
         self.inception3_3 = InceptionNet_paper()
         self.inception3_4 = InceptionNet_paper()
         self.b_norm = BatchNormalization()
+        self.masking = Masking(mask_value=0)
 
     def call(self, inputs, mask=None):
+        if mask is not None:
+            inputs = self.masking(inputs)
+
         X1 = self.inception1(inputs)
         X2 = self.inception2_2(self.inception2_1(inputs))
         X3 = self.inception3_3(self.inception3_2(self.inception3_1(inputs)))
