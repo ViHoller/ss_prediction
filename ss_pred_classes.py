@@ -4,20 +4,20 @@ from keras.layers import (Layer, Convolution1D, Activation,
 
 
 class inception_conv(Layer):
-    def __init__(self, kernel_s, num_features=100, **kwargs):
+    def __init__(self, kernel_s, num_features=31, **kwargs):
         super(inception_conv, self).__init__(**kwargs)
         self.conv = Convolution1D(num_features,
                                   kernel_size=kernel_s,
                                   kernel_regularizer=regularizers.l2(0.001),
                                   strides=1,
-                                  padding='same')
+                                  padding='same',
+                                  activation='relu')
         self.b_norm = BatchNormalization()
 
     def call(self, inputs):
         X = self.conv(inputs)
         X = Dropout(0.4)(X)
         X = self.b_norm(X)
-        X = Activation('relu')(X)
         return X
 
 

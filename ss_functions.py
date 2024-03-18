@@ -78,6 +78,25 @@ def get_data(file, encode_y=True, padding=True):
     return np.array(x), np.array(y)
 
 
+def get_data1(file, encode_y=True, padding=True):
+    x = []
+    y = []
+    with open(path+file, 'r') as sample_file:  # add some stuff to check?
+        for line in sample_file:
+            line = line.rstrip()
+            pssm, sequence = parse_pssm(line, padding=padding)
+            sequence_hot = aa_onehot_encoding(sequence, padding=padding)
+            features = np.concatenate((sequence_hot, pssm), axis=1)
+            x.append(features)
+
+            dssp = parse_dssp(line).replace('-', 'C')
+            if encode_y:
+                dssp = ss_onehot_encoding(dssp, padding=padding)
+
+            y.append(dssp)
+    return x, y
+
+
 def get_data2(file, encode_y=True, padding=True):
     x = [[], []]
     y = []
@@ -107,7 +126,7 @@ def truncated_accuracy(y_true, y_pred):
     return backend.mean(num_same / lengths, axis=0)
 
 
-def learn_decay(lr, epoch):
+def learn_decay(epoch, lr):
     if epoch < 12:
         return lr
     return 0.0005  # look at this later
