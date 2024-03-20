@@ -1,13 +1,11 @@
 import numpy as np
-import keras.backend as backend
+import keras.backend     as backend
 
 all_aa = "ARNDCEQGHILKMFPSTWYVX"
 aa_onehot_dict = dict()
 for i, aa in enumerate(all_aa):
     aa_onehot_dict[aa] = i
 ss_map = {'C': 0, 'H': 1, 'E': 2}
-
-path = "C:/Users/vinicius/Downloads/data/training/"
 
 
 def aa_onehot_encoding(seq, padding=True):
@@ -22,14 +20,14 @@ def aa_onehot_encoding(seq, padding=True):
     return profile
 
 
-def parse_dssp(dssp_file):
+def parse_dssp(path, dssp_file):
     with open(path+"dssp/"+dssp_file+".dssp", 'r') as file:
         file.readline()
         ss = file.readline().rstrip()
     return ss
 
 
-def parse_pssm(pssm_filename, padding=True):
+def parse_pssm(path, pssm_filename, padding=True):
     profile = []
     seq = ''
     with open(path+"pssm/"+pssm_filename+".pssm", 'r') as pssm:
@@ -59,18 +57,18 @@ def ss_onehot_encoding(ss_sequence, padding=True):
     return ss_encoded
 
 
-def get_data(file, encode_y=True, padding=True):
+def get_data(path, file, encode_y=True, padding=True):
     x = []
     y = []
     with open(path+file, 'r') as sample_file:  # add some stuff to check?
         for line in sample_file:
             line = line.rstrip()
-            pssm, sequence = parse_pssm(line, padding=padding)
+            pssm, sequence = parse_pssm(path, line, padding=padding)
             sequence_hot = aa_onehot_encoding(sequence, padding=padding)
             features = np.concatenate((sequence_hot, pssm), axis=1)
             x.append(features)
 
-            dssp = parse_dssp(line).replace('-', 'C')
+            dssp = parse_dssp(path, line).replace('-', 'C')
             if encode_y:
                 dssp = ss_onehot_encoding(dssp, padding=padding)
 
@@ -78,18 +76,18 @@ def get_data(file, encode_y=True, padding=True):
     return np.array(x), np.array(y)
 
 
-def get_data1(file, encode_y=True, padding=True):
+def get_data1(path, file, encode_y=True, padding=True):
     x = []
     y = []
     with open(path+file, 'r') as sample_file:  # add some stuff to check?
         for line in sample_file:
             line = line.rstrip()
-            pssm, sequence = parse_pssm(line, padding=padding)
+            pssm, sequence = parse_pssm(path, line, padding=padding)
             sequence_hot = aa_onehot_encoding(sequence, padding=padding)
             features = np.concatenate((sequence_hot, pssm), axis=1)
             x.append(features)
 
-            dssp = parse_dssp(line).replace('-', 'C')
+            dssp = parse_dssp(path, line).replace('-', 'C')
             if encode_y:
                 dssp = ss_onehot_encoding(dssp, padding=padding)
 
@@ -97,18 +95,21 @@ def get_data1(file, encode_y=True, padding=True):
     return x, y
 
 
-def get_data2(file, encode_y=True, padding=True):
+def get_data2(path, file, encode_y=True, padding=True,test=False):
     x = [[], []]
     y = []
     with open(path+file, 'r') as sample_file:  # add some stuff to check?
         for line in sample_file:
             line = line.rstrip()
-            pssm, sequence = parse_pssm(line, padding=padding)
+            if test:
+                line = line.replace(':', '_')
+            pssm, sequence = parse_pssm(path, line, padding=padding)
             sequence_hot = aa_onehot_encoding(sequence, padding=padding)
             x[0].append(sequence_hot)
             x[1].append(pssm)
 
-            dssp = parse_dssp(line).replace('-', 'C')
+            dssp = parse_dssp(path,line).replace('-', 'C')
+    
             if encode_y:
                 dssp = ss_onehot_encoding(dssp, padding=padding)
             y.append(dssp)
