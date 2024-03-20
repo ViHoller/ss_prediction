@@ -57,63 +57,25 @@ def ss_onehot_encoding(ss_sequence, padding=True):
     return ss_encoded
 
 
-def get_data(path, file, encode_y=True, padding=True):
+def get_data(path, file, encode_y=True, padding_x=True, padding_y=True, test=False):
     x = []
-    y = []
-    with open(path+file, 'r') as sample_file:  # add some stuff to check?
-        for line in sample_file:
-            line = line.rstrip()
-            pssm, sequence = parse_pssm(path, line, padding=padding)
-            sequence_hot = aa_onehot_encoding(sequence, padding=padding)
-            features = np.concatenate((sequence_hot, pssm), axis=1)
-            x.append(features)
-
-            dssp = parse_dssp(path, line).replace('-', 'C')
-            if encode_y:
-                dssp = ss_onehot_encoding(dssp, padding=padding)
-
-            y.append(dssp)
-    return np.array(x), np.array(y)
-
-
-def get_data1(path, file, encode_y=True, padding=True):
-    x = []
-    y = []
-    with open(path+file, 'r') as sample_file:  # add some stuff to check?
-        for line in sample_file:
-            line = line.rstrip()
-            pssm, sequence = parse_pssm(path, line, padding=padding)
-            sequence_hot = aa_onehot_encoding(sequence, padding=padding)
-            features = np.concatenate((sequence_hot, pssm), axis=1)
-            x.append(features)
-
-            dssp = parse_dssp(path, line).replace('-', 'C')
-            if encode_y:
-                dssp = ss_onehot_encoding(dssp, padding=padding)
-
-            y.append(dssp)
-    return x, y
-
-
-def get_data2(path, file, encode_y=True, padding=True,test=False):
-    x = [[], []]
     y = []
     with open(path+file, 'r') as sample_file:  # add some stuff to check?
         for line in sample_file:
             line = line.rstrip()
             if test:
                 line = line.replace(':', '_')
-            pssm, sequence = parse_pssm(path, line, padding=padding)
-            sequence_hot = aa_onehot_encoding(sequence, padding=padding)
-            x[0].append(sequence_hot)
-            x[1].append(pssm)
+            pssm, sequence = parse_pssm(path, line, padding=padding_x)
+            sequence_hot = aa_onehot_encoding(sequence, padding=padding_x)
+            features = np.concatenate((sequence_hot, pssm), axis=1)
+            x.append(features)
 
-            dssp = parse_dssp(path,line).replace('-', 'C')
-    
+            dssp = parse_dssp(path, line).replace('-', 'C')
             if encode_y:
-                dssp = ss_onehot_encoding(dssp, padding=padding)
+                dssp = ss_onehot_encoding(dssp, padding=padding_y )
+
             y.append(dssp)
-    return x, np.array(y)
+    return x, y
 
 
 def truncated_accuracy(y_true, y_pred):
@@ -125,9 +87,3 @@ def truncated_accuracy(y_true, y_pred):
     num_same = backend.sum(is_same * mask, axis=1)
     lengths = backend.sum(mask, axis=1)
     return backend.mean(num_same / lengths, axis=0)
-
-
-def learn_decay(epoch, lr):
-    if epoch < 12:
-        return lr
-    return 0.0005  # look at this later
