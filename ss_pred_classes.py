@@ -4,7 +4,7 @@ from keras.layers import (Layer, Convolution1D, Activation,
 
 
 class inception_conv(Layer):
-    def __init__(self, kernel_s, num_features=100, **kwargs):
+    def __init__(self, kernel_s, num_features=41, **kwargs):
         super(inception_conv, self).__init__(**kwargs)
         self.conv = Convolution1D(num_features,
                                   kernel_size=kernel_s,
